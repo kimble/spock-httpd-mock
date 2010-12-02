@@ -3,26 +3,26 @@ Spock httpd mock
 
 My first attempt at writing a [Spock](http://www.spockframework.org/) extension. It uses [NanoHTTPD](http://elonen.iki.fi/code/nanohttpd/), to set up a http server for unit testing. NanoHTTPD is a tiny, one file Java server perfect for this purpose. 
 
-First attempt
-------------
+Example
+-------
 
-    @WithHttpServer(port=5000)
-    def "simple http request"() {
+	@WithHttpServer(port=5000)
+    def "example for readme"() {
 
         given: "http server mock"
             HttpServer server = Mock(HttpServer)
-            TestHttpServer.mock = server // hack!
+            TestHttpServer.mock = server // 1
 
-        and: "http builder client"
-            HTTPBuilder http = new HTTPBuilder('http://localhost:5000')
+        and: "http builder client instead of acutal code under test"
+            HTTPBuilder http = new HTTPBuilder("http://localhost:5000")
             
-        when: "we execute a simple http get request"
-            String response = http.get(path: '/hello-spock.html')
+        when: "we execute a simple http get request with one parameter"
+            String response = http.get(path: '/helloService', query: [ name: "Spock" ])
 
-        then: "the server gets a get request for the expected uri"
-            1 * server.request("get", "/hello-spock.html") >> "Hello Spock!"
+        then: "/helloService is requested on the server with name = spock"
+            1 * server.request("get", "/helloService", { it["name"] == "Spock" }, _) >> "Hello Spock!"
 
-        and: "we got the expected return value"
+        and: "we got the return value we specified on the mock"
             response == "Hello Spock!"
 
     }
@@ -33,13 +33,17 @@ The good, the bad and the ugly
 
 ### The good
 
-It leverages the Spock's awesome interaction API. So you can write things like 
-`2 * server.request("get", "/index.html") >> "It works!` 
-if you expect two requests to be made for index.html
+1. It leverages the Spock's awesome interaction API. So you can write very expressive expectations. 
+
+2. Very little setup and no tear down code necessary in the tests. 
 
 ### The bad
 
-It's not even a little bit thread-safe. Kittens and unicorns **will** die if you use it in a multi-thread fashion. 
+1. It's not even a little bit thread-safe. Kittens and unicorns **will** die if you use it in a multi-threaded fashion.
+
+2. The syntax for defining constraints on parameters and headers are slightly messy.
+
+3. Error messages could be a lot better  
 
 ### The ugly
 
@@ -48,17 +52,17 @@ You must remember to pass the mock into the test http server. This allows the te
 
 Roadmap / things to do 
 -----------------------
+
+1. Improve error messages. 
  
-1. Implement a more fluent API allowing assertions to be made against parameters and headers. The current implementation in `TestHttpServer` is a very "hackish" / proof of concept implementation. 
-
 2. Let it select a random available port. I'm not sure how one would pass the selected port into the feature though. 
-
-Feedback
----------------
-
-This is my first attempt at writing a Spock extension. If you know the answer to some of the questions above, or know of better ways of doing things then please let me know! 
  
 Try it out
 ----------
 
 Check out the sources and run `gradle test` (you obviously need Gradle). 
+
+Feedback
+---------------
+
+This is my first attempt at writing a Spock extension. If you know the answer to some of the questions above, or know of better ways of doing things then please let me know! 

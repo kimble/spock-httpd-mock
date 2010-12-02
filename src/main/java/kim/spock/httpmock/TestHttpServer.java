@@ -20,14 +20,18 @@ public class TestHttpServer extends NanoHTTPD {
 	@SuppressWarnings("unchecked")
 	public Response serve(String uri, String method, Properties headers, Properties params) {
 		
+		System.out.println(method + ": " + uri + ", params: " + params);
+		
 		String status = HTTP_OK;
-		String mimeType = "text/html";
+		String mimeType = "text/html; charset=UTF-8";
 		String responseBody = null;
 		
 		method = method.toLowerCase();
-		Object response = mock.request(method, uri);
+		Object response = mock.request(method, uri, params, headers);
+		System.out.println(" -> Server response: " + response);
+		
 		if (response == null) 
-			return new Response(HTTP_INTERNALERROR, "text/html", "Unexpected " + method + " request to " + uri);
+			return new Response(HTTP_INTERNALERROR, "text/html", "Unexpected " + method + " request to " + uri + "\r\n");
 
 		if (response instanceof String) {
 			responseBody = (String) response;

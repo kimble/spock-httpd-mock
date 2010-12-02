@@ -26,7 +26,7 @@ class HttpServerExtensionSpec extends Specification {
 			String response = http.get(path: '/hello-spock.html')
 			
 		then: "The server recieves a request to the expected uri"
-			1 * server.request("get", "/hello-spock.html") >> "Hello Spock!"
+			1 * server.request("get", "/hello-spock.html", _, _) >> "Hello Spock!"
 			
 		and: "The response body is the same as given to the mock"
 			response == "Hello Spock!"
@@ -42,7 +42,7 @@ class HttpServerExtensionSpec extends Specification {
 			http.get(path: '/hello-spock.html', contentType: ContentType.TEXT)
 		
 		then: "/hello-spock.html should return a http not found response" 
-			1 * server.request("get", "/hello-spock.html") >> [ body: "Not found", status: TestHttpServer.HTTP_NOTFOUND ]
+			1 * server.request("get", "/hello-spock.html", _, _) >> [ body: "Not found", status: TestHttpServer.HTTP_NOTFOUND ]
 		
 		and: "Http builder thrown an http 404 exception" 
 			HttpResponseException ex = thrown(HttpResponseException)
@@ -61,6 +61,22 @@ class HttpServerExtensionSpec extends Specification {
 		then: "Http builder throws an http 500 exception"
 			HttpResponseException ex = thrown(HttpResponseException)
 			ex.statusCode == 500
+	}
+	
+	@Timeout(2)
+	def "Asserting parameters"() {
+		setup:
+			HttpServer server = Mock(HttpServer)
+			TestHttpServer.mock = server
+		
+		when: "We request a resource not expected by the mock"
+			String responseBody = http.get(path: '/service/adder', query: [ a: '2', b: '1' ])
+		
+		then: "Set up expectation"				
+			1 * server.request("get", "/service/adder", { it["a"] == "2" && it["b"] == "1" }, _) >> "3"
+		 
+		and: "Correct result"
+			Integer.parseInt(responseBody) == 3
 	}
 	
 }

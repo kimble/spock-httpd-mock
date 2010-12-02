@@ -12,16 +12,16 @@ class ExampleSpec extends Specification {
             HttpServer server = Mock(HttpServer)
             TestHttpServer.mock = server // 1
 
-        and: "http builder client"
-            HTTPBuilder http = new HTTPBuilder('http://localhost:5000')
+        and: "http builder client instead of acutal code under test"
+            HTTPBuilder http = new HTTPBuilder("http://localhost:5000")
             
-        when: "we execute a simple http get request"
-            String response = http.get(path: '/hello-spock.html')
+        when: "we execute a simple http get request with one parameter"
+            String response = http.get(path: '/helloService', query: [ name: "Spock" ])
 
-        then: "the server gets a get request for the expected uri"
-            1 * server.request("get", "/hello-spock.html") >> "Hello Spock!"
+        then: "/helloService is requested on the server with name = spock"
+            1 * server.request("get", "/helloService", { it["name"] == "Spock" }, _) >> "Hello Spock!"
 
-        and: "we got the expected return value"
+        and: "we got the return value we specified on the mock"
             response == "Hello Spock!"
 
     }
