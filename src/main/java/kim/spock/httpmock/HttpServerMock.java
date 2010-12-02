@@ -27,7 +27,7 @@ public class HttpServerMock extends NanoHTTPD {
 		method = method.toLowerCase();
 		Object response = mock.request(method, uri);
 		if (response == null) 
-			throw new RuntimeException("Unexpected " + method + " request for " + uri);
+			return new Response(HTTP_INTERNALERROR, "text/html", "Unexpected " + method + " request to " + uri);
 
 		if (response instanceof String) {
 			responseBody = (String) response;

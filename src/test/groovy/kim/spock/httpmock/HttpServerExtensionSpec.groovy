@@ -31,9 +31,29 @@ class HttpServerExtensionSpec extends Specification {
 		HttpServer server = Mock(HttpServer)
 		HttpServerMock.mock = server
 		
-		when: http.get(path: '/hello-spock.html', contentType: ContentType.TEXT)
-		then: 1 * server.request("get", "/hello-spock.html") >> [ body: "Not found", status: HttpServerMock.HTTP_NOTFOUND ]
-		and: thrown(HttpResponseException) // 404
+		when: "Execute a http request"
+		http.get(path: '/hello-spock.html', contentType: ContentType.TEXT)
+		
+		then: "/hello-spock.html should return a http not found response" 
+		1 * server.request("get", "/hello-spock.html") >> [ body: "Not found", status: HttpServerMock.HTTP_NOTFOUND ]
+		
+		and: "Http builder thrown an http 404 exception" 
+		HttpResponseException ex = thrown(HttpResponseException)
+		ex.statusCode == 404 
+	}
+	
+	@Timeout(2)
+	def "Unexpected request"() {
+		setup:
+		HttpServer server = Mock(HttpServer)
+		HttpServerMock.mock = server
+		
+		when: "We request a resource not expected by the mock" 
+		http.get(path: '/haba-haba.html')
+		
+		then: "Http builder throws an http 500 exception"
+		HttpResponseException ex = thrown(HttpResponseException)
+		ex.statusCode == 500
 	}
 	
 }
