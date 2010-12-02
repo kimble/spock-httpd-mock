@@ -8,11 +8,11 @@ import java.io.IOException;
  * 
  * @author Kim A. Betti
  */
-public class HttpServerMock extends NanoHTTPD {
+public class TestHttpServer extends NanoHTTPD {
 	
 	public static HttpServer mock;
 
-	public HttpServerMock(int port) throws IOException {
+	public TestHttpServer(int port) throws IOException {
 		super(port);
 	}
 

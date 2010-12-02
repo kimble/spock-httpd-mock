@@ -1,0 +1,1 @@
+Modified BSD licence, see the licence in the bottom of src/main/java/kim/spock/httpmock/NanoHTTPD.java

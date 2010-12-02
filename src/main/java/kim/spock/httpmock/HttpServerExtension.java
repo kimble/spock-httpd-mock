@@ -17,10 +17,12 @@ public class HttpServerExtension extends AbstractAnnotationDrivenExtension<WithH
 	public void visitFeatureAnnotation(WithHttpServer httpServer, FeatureInfo feature) {
 		MethodInfo featureMethod = feature.getFeatureMethod();
 		addInterceptor(httpServer, featureMethod);
+		
 	}
 	
 	private void addInterceptor(WithHttpServer httpServer, MethodInfo featureMethod) {
 		featureMethod.addInterceptor(new HttpServerInterceptor(httpServer));
+		
 	}
 	
 }

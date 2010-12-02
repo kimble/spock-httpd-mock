@@ -3,6 +3,10 @@ package kim.spock.httpmock;
 import org.spockframework.runtime.extension.IMethodInterceptor;
 import org.spockframework.runtime.extension.IMethodInvocation;
 
+/**
+ * 
+ * @author Kim A. Betti
+ */
 public class HttpServerInterceptor implements IMethodInterceptor {
 
 	private WithHttpServer serverAnnotation;
@@ -13,9 +17,9 @@ public class HttpServerInterceptor implements IMethodInterceptor {
 
 	public void intercept(IMethodInvocation invocation) throws Throwable {
 		int port = serverAnnotation.port();
-		HttpServerMock httpServer = null;
+		TestHttpServer httpServer = null;
 		try {
-			httpServer = new HttpServerMock(port);
+			httpServer = new TestHttpServer(port);
 			invocation.proceed();
 		} finally {
 			if (httpServer != null) {
