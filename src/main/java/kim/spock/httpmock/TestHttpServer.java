@@ -5,49 +5,57 @@ import java.util.Properties;
 import java.io.IOException;
 
 /**
- * 
+ * Starts a very light weight http server on the given port.
+ * Once the server has started its main task is to translate
+ * http requests into method invocations on the mock.
  * @author Kim A. Betti
  */
 public class TestHttpServer extends NanoHTTPD {
 	
 	public static HttpServer mock;
+	public static final String DEFAULT_MIME_TYPE = "text/html; charset=UTF-8";
 
 	public TestHttpServer(int port) throws IOException {
 		super(port);
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
-	public Response serve(String uri, String method, Properties headers, Properties params) {
+	public Response serve(String uri, String httpMethod, Properties headers, Properties params) {
+		Response response = new Response(HTTP_OK, DEFAULT_MIME_TYPE, "");
+		Object mockReturnValue = mock.request(httpMethod.toLowerCase(), uri, params, headers);
 		
-		System.out.println(method + ": " + uri + ", params: " + params);
-		
-		String status = HTTP_OK;
-		String mimeType = "text/html; charset=UTF-8";
-		String responseBody = null;
-		
-		method = method.toLowerCase();
-		Object response = mock.request(method, uri, params, headers);
-		System.out.println(" -> Server response: " + response);
-		
-		if (response == null) 
-			return new Response(HTTP_INTERNALERROR, "text/html", "Unexpected " + method + " request to " + uri + "\r\n");
-
-		if (response instanceof String) {
-			responseBody = (String) response;
-		} else if (response instanceof Map) {
-			Map<String, ?> responseMap = (Map<String, ?>) response;
-			if (responseMap.containsKey("body"))
-				responseBody = (String) responseMap.get("body");
-			
-			if (responseMap.containsKey("status"))
-				status = (String) responseMap.get("status");
-			
-			if (responseMap.containsKey("mime"))
-				mimeType = (String) responseMap.get("mime");
+		if (mockReturnValue == null) {
+			response.status = HTTP_INTERNALERROR;
+			response.setData("Unexpected " + httpMethod + " request to " + uri + "\r\n");
+		} else {
+			updateResponse(response, mockReturnValue);
 		}
 		
-		return new Response(status, mimeType, responseBody);
+		return response;
+	}
+
+	@SuppressWarnings("unchecked")
+	private void updateResponse(Response response, Object mockReturnValue) {
+		if (mockReturnValue instanceof String) {
+			response.setData((String) mockReturnValue);
+		} else if (mockReturnValue instanceof Map) {
+			Map<String, ?> responseMap = (Map<String, ?>) mockReturnValue;
+			updateResponseFromMap(response, responseMap);
+		}
+	}
+	
+	private void updateResponseFromMap(Response response, Map<String, ?> responseMap) {
+		if (responseMap.containsKey("body")) {
+			response.setData((String) responseMap.get("body"));
+		}
+		
+		if (responseMap.containsKey("status")) {
+			response.status = (String) responseMap.get("status");
+		}
+		
+		if (responseMap.containsKey("mime")) {
+			response.mimeType = (String) responseMap.get("mime");
+		}
 	}
 
 }

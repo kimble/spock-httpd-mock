@@ -134,7 +134,7 @@ public class NanoHTTPD {
 		public Response(String status, String mimeType, String txt) {
 			this.status = status;
 			this.mimeType = mimeType;
-			this.data = new ByteArrayInputStream(txt.getBytes());
+			setData(txt);
 		}
 
 		/**
@@ -142,6 +142,10 @@ public class NanoHTTPD {
 		 */
 		public void addHeader(String name, String value) {
 			header.put(name, value);
+		}
+		
+		public void setData(String data) {
+			this.data = new ByteArrayInputStream(data.getBytes());
 		}
 
 		/**

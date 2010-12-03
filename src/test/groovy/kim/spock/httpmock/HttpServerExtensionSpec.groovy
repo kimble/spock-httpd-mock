@@ -1,5 +1,7 @@
 package kim.spock.httpmock
 
+import java.util.Properties;
+
 import org.apache.http.client.HttpResponseException;
 
 import groovyx.net.http.ContentType;
@@ -11,19 +13,17 @@ import spock.lang.Timeout;
  * 
  * @author Kim A. Betti
  */
-@WithHttpServer(port=5000)
 class HttpServerExtensionSpec extends Specification {
 	
-	HTTPBuilder http = new HTTPBuilder('http://localhost:5000')
+	@HttpServerCfg(port=5000)
+	HttpServer server = Mock()
+	
+	def client = new HTTPBuilder('http://localhost:5000')
 	
 	@Timeout(2)
 	def "Simple http request"() {
-		setup:
-			HttpServer server = Mock(HttpServer)
-			TestHttpServer.mock = server
-		
 		when: "Execute a http request using http builder"
-			String response = http.get(path: '/hello-spock.html')
+			String response = client.get(path: '/hello-spock.html')
 			
 		then: "The server recieves a request to the expected uri"
 			1 * server.request("get", "/hello-spock.html", _, _) >> "Hello Spock!"
@@ -34,12 +34,9 @@ class HttpServerExtensionSpec extends Specification {
 	
 	@Timeout(2)
 	def "404 response"() {
-		setup:
-			HttpServer server = Mock(HttpServer)
-			TestHttpServer.mock = server
 		
 		when: "Execute a http request"
-			http.get(path: '/hello-spock.html', contentType: ContentType.TEXT)
+			client.get(path: '/hello-spock.html')
 		
 		then: "/hello-spock.html should return a http not found response" 
 			1 * server.request("get", "/hello-spock.html", _, _) >> [ body: "Not found", status: TestHttpServer.HTTP_NOTFOUND ]
@@ -51,12 +48,9 @@ class HttpServerExtensionSpec extends Specification {
 	
 	@Timeout(2)
 	def "Unexpected request"() {
-		setup:
-			HttpServer server = Mock(HttpServer)
-			TestHttpServer.mock = server
 		
 		when: "We request a resource not expected by the mock" 
-			http.get(path: '/haba-haba.html')
+			client.get(path: '/haba-haba.html')
 		
 		then: "Http builder throws an http 500 exception"
 			HttpResponseException ex = thrown(HttpResponseException)
@@ -65,14 +59,11 @@ class HttpServerExtensionSpec extends Specification {
 	
 	@Timeout(2)
 	def "Asserting parameters"() {
-		setup:
-			HttpServer server = Mock(HttpServer)
-			TestHttpServer.mock = server
 		
 		when: "We request a resource not expected by the mock"
-			String responseBody = http.get(path: '/service/adder', query: [ a: '2', b: '1' ])
+			String responseBody = client.get(path: '/service/adder', query: [ a: '2', b: '1' ])
 		
-		then: "Set up expectation"				
+		then: "Set up expectation"
 			1 * server.request("get", "/service/adder", { it["a"] == "2" && it["b"] == "1" }, _) >> "3"
 		 
 		and: "Correct result"

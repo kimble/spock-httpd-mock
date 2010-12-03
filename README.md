@@ -6,14 +6,12 @@ My first attempt at writing a [Spock](http://www.spockframework.org/) extension.
 Example
 -------
 
-	@WithHttpServer(port=5000)
+    @HttpServerCfg(port=5000)
+    HttpServer server = Mock()
+
     def "example for readme"() {
 
-        given: "http server mock"
-            HttpServer server = Mock(HttpServer)
-            TestHttpServer.mock = server // ugly hack
-
-        and: "http builder client instead of acutal code under test"
+        given: "http builder client instead of acutal code under test"
             HTTPBuilder http = new HTTPBuilder("http://localhost:5000")
             
         when: "we execute a simple http get request with one parameter"
@@ -43,17 +41,17 @@ The good, the bad and the ugly
 
 2. The syntax for defining constraints on parameters and headers are slightly messy.
 
-3. Error messages could be a lot better  
+3. Error messages could be a lot more helpful. 
 
 ### The ugly
 
-You must remember to pass the mock into the test http server. This allows the test server to translate http requests into method calls on the HttpServer mock. This is what allows the use of Spock's interaction API.
+Got rid of the most ugly part after advice from Peter Niederwieser. 
 
 
 Roadmap / things to do 
 -----------------------
 
-1. Improve error messages. 
+1. Improve error messages. I'm sure it's possible to make them a lot more helpful. 
  
 2. Let it select a random available port. I'm not sure how one would pass the selected port into the feature though. 
  
