@@ -11,7 +11,7 @@ Example
 
         given: "http server mock"
             HttpServer server = Mock(HttpServer)
-            TestHttpServer.mock = server // 1
+            TestHttpServer.mock = server // ugly hack
 
         and: "http builder client instead of acutal code under test"
             HTTPBuilder http = new HTTPBuilder("http://localhost:5000")

@@ -11,10 +11,11 @@ repositories {
 
 dependencies {
     groovy group: 'org.codehaus.groovy', name: 'groovy', version: '1.7.5'
+    
+    compile "junit:junit:4.8.1"
     compile "org.spockframework:spock-core:0.5-groovy-1.7-SNAPSHOT"
-    compile "org.codehaus.groovy.modules.http-builder:http-builder:0.5.1", {
+    
+    testCompile "org.codehaus.groovy.modules.http-builder:http-builder:0.5.1", {
         exclude module: "groovy"
     }
-
-    compile "junit:junit:4.8.1" 
 }
