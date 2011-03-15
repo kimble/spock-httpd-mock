@@ -1,4 +1,4 @@
-package kim.spock.httpmock;
+package spock.extension.httpdmock;
 
 import java.lang.annotation.*;
 import org.spockframework.runtime.extension.ExtensionAnnotation;
@@ -7,5 +7,5 @@ import org.spockframework.runtime.extension.ExtensionAnnotation;
 @Target(ElementType.FIELD)
 @ExtensionAnnotation(HttpServerExtension.class)
 public @interface HttpServerCfg {
-	int port() default 11000;
+    int port() default 23019;
 }

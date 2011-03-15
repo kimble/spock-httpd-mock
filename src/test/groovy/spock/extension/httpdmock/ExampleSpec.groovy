@@ -1,6 +1,8 @@
-package kim.spock.httpmock
+package spock.extension.httpdmock
 
 import groovyx.net.http.HTTPBuilder;
+import spock.extension.httpdmock.HttpServer;
+import spock.extension.httpdmock.response.HttpResponseStub;
 import spock.lang.Specification;
 
 /**
@@ -13,7 +15,6 @@ class ExampleSpec extends Specification {
     HttpServer server = Mock()
 
     def "example for readme"() {
-
         given: "http builder client instead of acutal code under test"
         HTTPBuilder http = new HTTPBuilder("http://localhost:5000")
 
@@ -21,7 +22,7 @@ class ExampleSpec extends Specification {
         String response = http.get(path: '/helloService', query: [ name: "Spock" ])
 
         then: "/helloService is requested on the server with name = spock"
-        1 * server.request("get", "/helloService", { it.name == "Spock" }, _) >> "Hello Spock!"
+        1 * server.request("/helloService", { it.params.name == "Spock" }) >> new HttpResponseStub(responseBody: "Hello Spock!")
 
         and: "we got the return value we specified on the mock"
         response == "Hello Spock!"

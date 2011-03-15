@@ -1,28 +1,30 @@
 Spock httpd mock
 ================
 
-My first attempt at writing a [Spock](http://www.spockframework.org/) extension. It uses [NanoHTTPD](http://elonen.iki.fi/code/nanohttpd/), to set up a http server for unit testing. NanoHTTPD is a tiny, one file Java server perfect for this purpose. 
+My first attempt at writing a [Spock](http://www.spockframework.org/) extension. Jetty is used to set up a http server for unit testing. The first version of this plugin used NanoHTTPD as I thought that Jetty would be to slow for unit testing. It turns out that Jetty starts and stops a lot faster that I had thought! 
 
 Example
 -------
 
-    @HttpServerCfg(port=5000)
-    HttpServer server = Mock()
+    class ExampleSpec extends Specification {
 
-    def "example for readme"() {
+        @HttpServerCfg(port=5000)
+        HttpServer server = Mock()
 
-        given: "http builder client instead of acutal code under test"
+        def "example for readme"() {
+            given: "http builder client instead of acutal code under test"
             HTTPBuilder http = new HTTPBuilder("http://localhost:5000")
-            
-        when: "we execute a simple http get request with one parameter"
+
+            when: "we execute a simple http get request with one parameter"
             String response = http.get(path: '/helloService', query: [ name: "Spock" ])
 
-        then: "/helloService is requested on the server with name = spock"
-            1 * server.request("get", "/helloService", { it["name"] == "Spock" }, _) >> "Hello Spock!"
+            then: "/helloService is requested on the server with name = spock"
+            1 * server.request("/helloService", { it.params.name == "Spock" }) >> new HttpResponseStub(responseBody: "Hello Spock!")
 
-        and: "we got the return value we specified on the mock"
+            and: "we got the return value we specified on the mock"
             response == "Hello Spock!"
-
+        }
+        
     }
 
     
@@ -53,7 +55,9 @@ Roadmap / things to do
 
 1. Improve error messages. I'm sure it's possible to make them a lot more helpful. 
  
-2. Let it select a random available port. I'm not sure how one would pass the selected port into the feature though. 
+2. Add support for the typical rest convention, with json and xml builders for resposes. 
+
+3. Support file uploading. 
  
 Try it out
 ----------
