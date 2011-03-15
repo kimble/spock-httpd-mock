@@ -31,20 +31,20 @@ class ExampleSpec extends Specification {
     }
     
     def "xml response"() {
-        given: "http builder client instead of acutal code under test"
+        given: 
         HTTPBuilder http = new HTTPBuilder("http://localhost:5000")
 
-        when: "we execute a simple http get request with one parameter"
+        when: "we execute a http get request an xml rest service"
         NodeChild response = http.get(path: "/fraktguide/postalCode.xml", query: [ pnr: "7600" ])
 
-        then: "/helloService is requested on the server with name = spock"
+        then: "we use Spocks interaction API and XmlBuilder to generate an xml response"
         1 * server.request("/fraktguide/postalCode.xml", { true }) >> XmlHttpResponseStub.build {
             PostalCodeQueryResponse {
                 Response(valid: true, "Levanger")
             }
         }
 
-        and: "we got the return value we specified on the mock"
+        and: "we can use Groovys slurper support to extract the data"
         response.Response.text() == "Levanger"
     }
     
