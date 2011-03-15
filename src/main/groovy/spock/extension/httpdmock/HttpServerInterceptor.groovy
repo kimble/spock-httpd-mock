@@ -1,18 +1,11 @@
 package spock.extension.httpdmock;
 
-import java.io.IOException;
+import org.spockframework.runtime.extension.IMethodInterceptor
+import org.spockframework.runtime.extension.IMethodInvocation
+import org.spockframework.runtime.model.FieldInfo
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.mortbay.jetty.handler.AbstractHandler;
-import org.spockframework.runtime.extension.IMethodInterceptor;
-import org.spockframework.runtime.extension.IMethodInvocation;
-import org.spockframework.runtime.model.FieldInfo;
-
-import spock.extension.httpdmock.jetty.JettyHttpServer;
-import spock.extension.httpdmock.response.HttpResponseStub;
+import spock.extension.httpdmock.jetty.JettyHttpServer
+import spock.extension.httpdmock.plugin.simple.SimpleRequestPlugin
 
 
 /**
@@ -32,18 +25,33 @@ public class HttpServerInterceptor implements IMethodInterceptor {
     }
 
     public void intercept(IMethodInvocation invocation) throws Throwable {
-        int port = serverAnnotation.port()
+        HttpServer serverMock = getMockFromSpec(serverField, invocation.getTarget())
         JettyHttpServer jetty
         
         try {
-            def mock = getMockFromSpec(serverField, invocation.getTarget())
             jetty = new JettyHttpServer();
-            jetty << createMockHandler(mock)
+            activatePlugins(jetty, serverMock)
             
-            jetty.start(port);
+            jetty.start(serverAnnotation.port());
             invocation.proceed();
         } finally {
             jetty?.stop()
+        }
+    }
+    
+    // TODO: We should probably keep a reference to the plugin instances
+    // so that they can be notified when the server is about to shut down. 
+    protected void activatePlugins(JettyHttpServer jetty, HttpServer serverMock) {
+        createPluginInstances().each { SimpleRequestPlugin plugin ->
+            println "Activating plugin: $plugin"
+            plugin.beforeServerStartup(jetty, serverMock)
+        }
+    }
+    
+    protected List createPluginInstances() {
+        serverAnnotation.plugins().collect { Class pluginClass ->
+            assert SimpleRequestPlugin.isAssignableFrom(pluginClass)
+            pluginClass.newInstance()
         }
     }
 
@@ -55,69 +63,6 @@ public class HttpServerInterceptor implements IMethodInterceptor {
         } else {
             return serverMock
         }
-    }
-
-    protected createMockHandler(def mock) {
-        new MockHandler(mock: mock)
-    }    
-    
-}
-
-/**
- * Translates http requests into method invocations on the mock
- * @author Kim A. Betti
- */
-class MockHandler extends AbstractHandler {
-
-    def mock
-    def defaultResponseStub = new HttpResponseStub(statusCode: 404, responseBody: "Not found")
-    
-    @Override
-    public void handle(String target, HttpServletRequest request, HttpServletResponse response, int dispatch) throws IOException, ServletException {
-        WrappedRequest wrappedRequest = new WrappedRequest(request)
-        HttpResponseStub mr = mock.request(target, wrappedRequest) ?: defaultResponseStub 
-        
-        response.with {
-            contentType = mr.contentType
-            status = mr.statusCode
-            writer.print(mr.responseBody)
-        }
-        
-        request.handled = true
-    }
-    
-}
-
-class WrappedRequest {
-    
-    HttpServletRequest request
-    Map params = [:]
-    
-    public WrappedRequest(HttpServletRequest request) {
-        createParamMap(request)
-        this.request = request
-    }
-    
-    Map createParamMap(HttpServletRequest request) {
-        request.parameterMap.each { String name, def value ->
-            params[name] = value.length == 1 ? value[0] : value
-        }
-    }
-    
-    boolean hasHeader(String headerName) {
-        request.headerNames.any { String rhn ->
-            rhn.compareToIgnoreCase(headerName)
-        }
-    }
-    
-    boolean hasParameter(String parameterName) {
-        request.parameterNames.any { String rpn ->
-            rpn.compareToIgnoreCase(parameterName)
-        }
-    }
-    
-    boolean hasParameter(String parameterName, String value) {
-        request.getParameter(parameterName) == value
     }
     
 }

@@ -1,11 +1,11 @@
 package spock.extension.httpdmock;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import spock.extension.httpdmock.request.WrappedRequest
 import spock.extension.httpdmock.response.HttpResponseStub
 
 /**
- * 
+ * Specifications will create a mock of this interface and use
+ * the mock to make assertions against future http requests.
  * @author Kim A. Betti
  */
 public interface HttpServer {

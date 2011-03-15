@@ -33,12 +33,12 @@ class ExampleSpec extends Specification {
     def "xml response"() {
         given: 
         HTTPBuilder http = new HTTPBuilder("http://localhost:5000")
-
+        
         when: "we execute a http get request an xml rest service"
         NodeChild response = http.get(path: "/fraktguide/postalCode.xml", query: [ pnr: "7600" ])
 
         then: "we use Spocks interaction API and XmlBuilder to generate an xml response"
-        1 * server.request("/fraktguide/postalCode.xml", { true }) >> XmlHttpResponseStub.build {
+        1 * server.request("/fraktguide/postalCode.xml", { it.params.pnr == "7600" }) >> XmlHttpResponseStub.build {
             PostalCodeQueryResponse {
                 Response(valid: true, "Levanger")
             }

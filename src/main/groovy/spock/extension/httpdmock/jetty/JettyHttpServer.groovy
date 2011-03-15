@@ -40,9 +40,11 @@ class JettyHttpServer {
     }
 
     public void stop() {
-        server.stop()
-        waitFor(max: 3000, interval: 100) {
-            server.isStopped()
+        if (server != null) {
+            server.stop()
+            waitFor(max: 3000, interval: 100) {
+                server.isStopped()
+            }
         }
     }
 
