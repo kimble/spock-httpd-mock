@@ -1,7 +1,8 @@
 package kim.spock.httpmock;
 
-import java.util.Properties;
+import groovy.lang.Closure;
 
+import java.util.Properties;
 
 /**
  * 
@@ -9,10 +10,12 @@ import java.util.Properties;
  */
 public interface HttpServer {
 
-	Object request(String method, String uri);
+    Object request(String method, String uri);
 
-	Object request(String method, String uri, Properties params);
-	
-	Object request(String method, String uri, Properties params, Properties headers);
-	
+    Object request(String method, String uri, Properties params);
+
+    Object request(String method, String uri, Properties params, Properties headers);
+
+    Object request(Closure dsl);
+
 }
