@@ -1,10 +1,12 @@
-package spock.extension.httpdmock;
+package spock.extension.httpdmock.server;
 
-import org.spockframework.runtime.extension.AbstractAnnotationDrivenExtension;
-import org.spockframework.runtime.model.FeatureInfo;
-import org.spockframework.runtime.model.FieldInfo;
-import org.spockframework.runtime.model.MethodInfo;
-import org.spockframework.runtime.model.SpecInfo;
+import org.spockframework.runtime.extension.AbstractAnnotationDrivenExtension
+import org.spockframework.runtime.model.FeatureInfo
+import org.spockframework.runtime.model.FieldInfo
+import org.spockframework.runtime.model.MethodInfo
+import org.spockframework.runtime.model.SpecInfo
+
+import spock.extension.httpdmock.HttpServerCfg
 
 
 /**

@@ -1,11 +1,12 @@
 package spock.extension.httpdmock
 
-import groovy.util.slurpersupport.NodeChild;
-import groovyx.net.http.HTTPBuilder;
-import spock.extension.httpdmock.HttpServer;
-import spock.extension.httpdmock.response.HttpResponseStub;
-import spock.extension.httpdmock.response.XmlHttpResponseStub;
-import spock.lang.Specification;
+import groovy.util.slurpersupport.NodeChild
+import groovyx.net.http.HTTPBuilder
+import spock.extension.httpdmock.response.HttpResponseStub
+import spock.extension.httpdmock.response.XmlHttpResponseStub
+import spock.extension.httpdmock.service.simple.SimpleHttpRequestService
+import spock.extension.httpdmock.service.simple.SimpleHttpService
+import spock.lang.Specification
 
 /**
  * 
@@ -15,6 +16,9 @@ class ExampleSpec extends Specification {
 
     @HttpServerCfg(port=5000)
     HttpServer server = Mock()
+    
+    @HttpServiceMock(SimpleHttpRequestService)
+    SimpleHttpService simpleHttpService = Mock()
 
     def "example for readme"() {
         given: "http builder client instead of acutal code under test"
@@ -24,7 +28,7 @@ class ExampleSpec extends Specification {
         String response = http.get(path: "/helloService", query: [ name: "Spock" ])
 
         then: "/helloService is requested on the server with name = spock"
-        1 * server.request("/helloService", { it.params.name == "Spock" }) >> new HttpResponseStub(responseBody: "Hello Spock!")
+        1 * simpleHttpService.request("/helloService", { it.params.name == "Spock" }) >> new HttpResponseStub(responseBody: "Hello Spock!")
 
         and: "we got the return value we specified on the mock"
         response == "Hello Spock!"
@@ -38,7 +42,7 @@ class ExampleSpec extends Specification {
         NodeChild response = http.get(path: "/fraktguide/postalCode.xml", query: [ pnr: "7600" ])
 
         then: "we use Spocks interaction API and XmlBuilder to generate an xml response"
-        1 * server.request("/fraktguide/postalCode.xml", { it.params.pnr == "7600" }) >> XmlHttpResponseStub.build {
+        1 * simpleHttpService.request("/fraktguide/postalCode.xml", { it.params.pnr == "7600" }) >> XmlHttpResponseStub.build {
             PostalCodeQueryResponse {
                 Response(valid: true, "Levanger")
             }
