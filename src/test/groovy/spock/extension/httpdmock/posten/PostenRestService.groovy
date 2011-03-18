@@ -6,7 +6,7 @@ import groovyx.net.http.HTTPBuilder
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
-import spock.extension.httpdmock.HttpServer
+import spock.extension.httpdmock.HttpTestServer
 import spock.extension.httpdmock.HttpServerCfg
 import spock.extension.httpdmock.HttpServiceHandler
 import spock.extension.httpdmock.HttpServiceMock
@@ -20,15 +20,16 @@ import spock.lang.Specification
  */
 class PostenRestServiceSpec extends Specification {
   
-    @HttpServerCfg(port=5000)
-    HttpServer server = Mock()
+    @HttpServerCfg
+    HttpTestServer server
     
     @HttpServiceMock(PostenRestServiceHandler)
     ZipCodeResolver postenZipResolver = Mock()
 
-    HTTPBuilder http = new HTTPBuilder("http://localhost:5000")
-    
     def "Should translate http requests into method invokations on the service interface"() {
+        given: "a http client"
+        HTTPBuilder http = new HTTPBuilder(server.baseUri)
+        
         when: "we execute a simple http get request to the zip code resolver endpoint"
         NodeChild xmlResponse = http.get(path: "/fraktguide/postalCode.xml", query: [ pnr: "9710" ])
 
@@ -40,6 +41,9 @@ class PostenRestServiceSpec extends Specification {
     }
     
     def "Testing how the endpoint deals with invalid zip codes"() {
+        given: "a http client"
+        HTTPBuilder http = new HTTPBuilder(server.baseUri)
+        
         when: "we request the city name for an invalid zip code"
         NodeChild xmlResponse = http.get(path: "/fraktguide/postalCode.xml", query: [ pnr: "xxx" ])
         

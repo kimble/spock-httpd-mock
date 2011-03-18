@@ -14,6 +14,6 @@ import spock.extension.httpdmock.server.HttpServerExtension
 @ExtensionAnnotation(HttpServerExtension.class)
 public @interface HttpServerCfg {
     
-    int port() default 23019
+    int value() default 23019
     
 }

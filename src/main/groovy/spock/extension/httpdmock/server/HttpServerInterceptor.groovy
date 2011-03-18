@@ -2,16 +2,18 @@ package spock.extension.httpdmock.server;
 
 import java.lang.reflect.Field
 
+import org.codehaus.groovy.runtime.InvokerHelper;
 import org.spockframework.runtime.extension.IMethodInterceptor
 import org.spockframework.runtime.extension.IMethodInvocation
 import org.spockframework.runtime.model.FieldInfo
 
-import spock.extension.httpdmock.HttpServer
+import spock.extension.httpdmock.HttpTestServer
 import spock.extension.httpdmock.HttpServerCfg
 import spock.extension.httpdmock.HttpServiceHandler
 import spock.extension.httpdmock.HttpServiceMock
 import spock.extension.httpdmock.httpservice.DefaultHttpServiceHandler
 import spock.extension.httpdmock.jetty.JettyHttpServer
+import spock.lang.Specification;
 
 
 /**
@@ -31,35 +33,27 @@ public class HttpServerInterceptor implements IMethodInterceptor {
     }
 
     public void intercept(IMethodInvocation invocation) throws Throwable {
-        HttpServer serverMock = getMockFromSpec(serverField, invocation.getTarget())
-        JettyHttpServer jetty
+        HttpTestServer jetty
         
         try {
-            jetty = new JettyHttpServer()
+            jetty = new JettyHttpServer(port: serverAnnotation.value())
+            injectTestServerIntoSpec(jetty, serverField, invocation.target)
             activateServices(jetty, invocation.target)
                 
-            jetty.start(serverAnnotation.port())
+            jetty.start()
             invocation.proceed()
         } finally {
             jetty?.stop()
         }
     }
 
-    protected getMockFromSpec(FieldInfo serverField, Object target) {
-        def serverMock = serverField.readValue(target);
-        if (!serverMock) {
-            String specName = target.getClass().simpleName
-            String exMsg = "${specName} should contain a field annotated with something like @HttpServerCfg(port=1234)"
-            throw new RuntimeException(exMsg)
-        }
-        
-        return serverMock
+    protected void injectTestServerIntoSpec(HttpTestServer testServer, FieldInfo serverField, Specification spec) {
+        InvokerHelper.setProperty(spec, serverField.name, testServer)
     }
     
     protected void activateServices(JettyHttpServer jetty, Object target) {
         List serviceHandlers = getServiceHandlersFromSpec(target)
         serviceHandlers.each { HttpServiceHandler serviceHandler ->
-            println "Activating service: " + serviceHandler
             def wrappedHandler = new DefaultHttpServiceHandler(serviceHandler: serviceHandler)
             jetty << wrappedHandler
         }

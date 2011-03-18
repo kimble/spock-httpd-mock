@@ -6,7 +6,7 @@ import javax.servlet.http.HttpServletResponse
 
 import org.mortbay.jetty.handler.AbstractHandler
 
-import spock.extension.httpdmock.HttpServer
+import spock.extension.httpdmock.HttpTestServer
 import spock.extension.httpdmock.HttpServiceHandler;
 import spock.extension.httpdmock.jetty.JettyHttpServer
 import spock.extension.httpdmock.request.WrappedRequest

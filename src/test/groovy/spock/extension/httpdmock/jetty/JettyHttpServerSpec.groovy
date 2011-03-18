@@ -10,8 +10,8 @@ class JettyHttpServerSpec extends Specification {
 
     def "Should be able to start and stop Jetty"() {
         when: "we say start"
-        JettyHttpServer jetty = new JettyHttpServer()
-        jetty.start(15006)    
+        JettyHttpServer jetty = new JettyHttpServer(port: 36015)
+        jetty.start()
         
         then: "the server should be started by the time the method returns"
         jetty.server.isStarted()

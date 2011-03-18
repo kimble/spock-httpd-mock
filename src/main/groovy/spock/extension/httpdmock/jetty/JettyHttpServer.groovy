@@ -9,27 +9,27 @@ import org.mortbay.jetty.*
 import org.mortbay.jetty.handler.AbstractHandler;
 import org.mortbay.jetty.servlet.*
 
-import spock.extension.httpdmock.HttpServer;
+import spock.extension.httpdmock.HttpTestServer;
 
 /**
- * 
+ * Jetty rocks! 
  * @author Kim A. Betti
  */
-class JettyHttpServer {
+class JettyHttpServer implements HttpTestServer {
     
     List requestHandlers = []
     Server server 
+    
+    Integer port
     
     public void leftShift(Handler handler) {
         requestHandlers << handler
     }
     
-    public void start(int port) {
+    public void start() {
         createServer(port)
         server.start()
-        waitFor(max: 3000, interval: 100) {
-            server.isStarted()
-        }
+        waitFor(max: 3000, interval: 100, server.&isStarted)
     }
     
     protected void createServer(int httpPort) {
@@ -39,12 +39,14 @@ class JettyHttpServer {
         }
     }
 
+    public String getBaseUri() {
+        "http://localhost:$port/"
+    }
+
     public void stop() {
         if (server != null) {
             server.stop()
-            waitFor(max: 3000, interval: 100) {
-                server.isStopped()
-            }
+            waitFor(max: 3000, interval: 100, server.&isStopped)
         }
     }
 

@@ -14,15 +14,15 @@ import spock.lang.Specification
  */
 class ExampleSpec extends Specification {
 
-    @HttpServerCfg(port=5000)
-    HttpServer server = Mock()
+    @HttpServerCfg
+    HttpTestServer server
     
     @HttpServiceMock(SimpleHttpRequestService)
     SimpleHttpService simpleHttpService = Mock()
 
     def "example for readme"() {
         given: "http builder client instead of acutal code under test"
-        HTTPBuilder http = new HTTPBuilder("http://localhost:5000")
+        HTTPBuilder http = new HTTPBuilder(server.baseUri)
 
         when: "we execute a simple http get request with one parameter"
         String response = http.get(path: "/helloService", query: [ name: "Spock" ])
@@ -36,7 +36,7 @@ class ExampleSpec extends Specification {
     
     def "xml response"() {
         given: 
-        HTTPBuilder http = new HTTPBuilder("http://localhost:5000")
+        HTTPBuilder http = new HTTPBuilder(server.baseUri)
         
         when: "we execute a http get request an xml rest service"
         NodeChild response = http.get(path: "/fraktguide/postalCode.xml", query: [ pnr: "7600" ])

@@ -16,16 +16,19 @@ import spock.lang.Timeout
  */
 class HttpServerExtensionSpec extends Specification {
 
-    @HttpServerCfg(port=5000)
-    HttpServer server = Mock()
+    @HttpServerCfg
+    HttpTestServer server
     
     @HttpServiceMock(SimpleHttpRequestService)
     SimpleHttpService simpleHttpService = Mock()
 
-    def client = new HTTPBuilder('http://localhost:5000')
+    HTTPBuilder client
 
     @Timeout(2)
     def "Simple http request"() {
+        given: "a http client"
+        HTTPBuilder client = new HTTPBuilder(server.baseUri)
+        
         when: "Execute a http request using http builder"
         String response = client.get(path: '/hello-spock.html')
 
@@ -38,6 +41,9 @@ class HttpServerExtensionSpec extends Specification {
     
     @Timeout(2)
     def "404 response"() {
+        given: "a http client"
+        HTTPBuilder client = new HTTPBuilder(server.baseUri)
+        
         when: "Execute a http request"
         client.get(path: '/hello-spack.html')
 
@@ -51,6 +57,8 @@ class HttpServerExtensionSpec extends Specification {
 
     @Timeout(2)
     def "Asserting parameters"() {
+        given: "a http client"
+        HTTPBuilder client = new HTTPBuilder(server.baseUri)
 
         when: "We request a resource not expected by the mock"
         String responseBody = client.get(path: '/service/adder', query: [ a: '2', b: '1' ])
