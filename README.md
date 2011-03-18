@@ -1,30 +1,31 @@
 Spock httpd mock
 ================
 
-My first attempt at writing a [Spock](http://www.spockframework.org/) extension. Jetty is used to set up a http server for unit testing. The first version of this plugin used NanoHTTPD as I thought that Jetty would be to slow for unit testing. It turns out that Jetty starts and stops a lot faster that I had thought! 
+My first attempt at writing a [Spock](http://www.spockframework.org/) extension. Jetty is used to set up a http server for unit testing. The first version of this plugin used NanoHTTPD as I thought that Jetty would be to slow for unit testing. It turns out that Jetty starts and stops a lot faster that I had thought!
+
+Important: This readme is a bit outdated (TODO)
 
 Example
 -------
 
-    class ExampleSpec extends Specification {
+    @HttpServerCfg
+    HttpTestServer server
+    
+    @HttpServiceMock(SimpleHttpRequestService)
+    SimpleHttpService simpleHttpService = Mock()
 
-        @HttpServerCfg(port=5000)
-        HttpServer server = Mock()
+    def "example for readme"() {
+        given: "http builder client instead of acutal code under test"
+        HTTPBuilder http = new HTTPBuilder(server.baseUri)
 
-        def "example for readme"() {
-            given: "http builder client instead of acutal code under test"
-            HTTPBuilder http = new HTTPBuilder("http://localhost:5000")
+        when: "we execute a simple http get request with one parameter"
+        String response = http.get(path: "/helloService", query: [ name: "Spock" ])
 
-            when: "we execute a simple http get request with one parameter"
-            String response = http.get(path: '/helloService', query: [ name: "Spock" ])
+        then: "/helloService is requested on the server with name = spock"
+        1 * simpleHttpService.request("/helloService", { it.params.name == "Spock" }) >> new HttpResponseStub(responseBody: "Hello Spock!")
 
-            then: "/helloService is requested on the server with name = spock"
-            1 * server.request("/helloService", { it.params.name == "Spock" }) >> new HttpResponseStub(responseBody: "Hello Spock!")
-
-            and: "we got the return value we specified on the mock"
-            response == "Hello Spock!"
-        }
-        
+        and: "we got the return value we specified on the mock"
+        response == "Hello Spock!"
     }
 
     
