@@ -9,14 +9,10 @@ import spock.extension.httpdmock.response.HttpResponseStub
  */
 public interface HttpTestServer {
 
-    // status?
-    
     String getBaseUri()
-    
     Integer getPort()
     
     void start()
-    
     void stop()
     
 }

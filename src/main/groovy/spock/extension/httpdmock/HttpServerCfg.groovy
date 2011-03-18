@@ -7,6 +7,7 @@ import java.lang.annotation.Target
 
 import org.spockframework.runtime.extension.ExtensionAnnotation
 
+import spock.extension.httpdmock.jetty.JettyHttpServer
 import spock.extension.httpdmock.server.HttpServerExtension
 
 @Retention(RetentionPolicy.RUNTIME)
@@ -14,6 +15,7 @@ import spock.extension.httpdmock.server.HttpServerExtension
 @ExtensionAnnotation(HttpServerExtension.class)
 public @interface HttpServerCfg {
     
-    int value() default 23019
+    int port() default 23019
+    Class serverClass() default JettyHttpServer
     
 }

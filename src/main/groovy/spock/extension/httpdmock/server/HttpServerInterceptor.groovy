@@ -2,23 +2,22 @@ package spock.extension.httpdmock.server;
 
 import java.lang.reflect.Field
 
-import org.codehaus.groovy.runtime.InvokerHelper;
+import org.codehaus.groovy.runtime.InvokerHelper
 import org.spockframework.runtime.extension.IMethodInterceptor
 import org.spockframework.runtime.extension.IMethodInvocation
 import org.spockframework.runtime.model.FieldInfo
 
-import spock.extension.httpdmock.HttpTestServer
 import spock.extension.httpdmock.HttpServerCfg
 import spock.extension.httpdmock.HttpServiceHandler
 import spock.extension.httpdmock.HttpServiceMock
-import spock.extension.httpdmock.httpservice.DefaultHttpServiceHandler
-import spock.extension.httpdmock.jetty.JettyHttpServer
-import spock.lang.Specification;
-
+import spock.extension.httpdmock.HttpTestServer
+import spock.extension.httpdmock.jetty.JettyHttpServiceHandler
+import spock.lang.Specification
 
 /**
  * Starts and stops a http test server before / after each feature method
- * invocation.
+ * invocation. It will also scan the specification for fields annotated
+ * with @HttpServiceMock and make sure that they get configured. 
  * 
  * @author Kim A. Betti
  */
@@ -33,53 +32,66 @@ public class HttpServerInterceptor implements IMethodInterceptor {
     }
 
     public void intercept(IMethodInvocation invocation) throws Throwable {
-        HttpTestServer jetty
+        HttpTestServer httpTestServer = createHttpTestServer(serverAnnotation.port())
+        injectTestServerIntoSpec(httpTestServer, serverField, invocation.target)
+        activateServices(httpTestServer, invocation.target)
         
         try {
-            jetty = new JettyHttpServer(port: serverAnnotation.value())
-            injectTestServerIntoSpec(jetty, serverField, invocation.target)
-            activateServices(jetty, invocation.target)
-                
-            jetty.start()
+            httpTestServer.start()
             invocation.proceed()
         } finally {
-            jetty?.stop()
+            httpTestServer?.stop()
         }
+    }
+    
+    protected HttpTestServer createHttpTestServer(int port) {
+        HttpTestServer server = serverAnnotation.serverClass().newInstance()
+        server.port = port
+        return server
     }
 
     protected void injectTestServerIntoSpec(HttpTestServer testServer, FieldInfo serverField, Specification spec) {
         InvokerHelper.setProperty(spec, serverField.name, testServer)
     }
     
-    protected void activateServices(JettyHttpServer jetty, Object target) {
+    protected void activateServices(HttpTestServer httpTestServer, Object target) {
         List serviceHandlers = getServiceHandlersFromSpec(target)
         serviceHandlers.each { HttpServiceHandler serviceHandler ->
-            def wrappedHandler = new DefaultHttpServiceHandler(serviceHandler: serviceHandler)
-            jetty << wrappedHandler
+            def wrappedHandler = new JettyHttpServiceHandler(serviceHandler: serviceHandler)
+            httpTestServer << wrappedHandler
         }
     }
     
-    protected List getServiceHandlersFromSpec(Object target) {
+    protected List getServiceHandlersFromSpec(Specification target) {
         List serviceFields = getServiceFields(target.getClass())
         return serviceFields.collect { Field serviceField ->
-            HttpServiceMock serviceAnnotation = serviceField.getAnnotation(HttpServiceMock)
-            Class serviceClass = serviceAnnotation.value()
-            
-            HttpServiceHandler serviceHandler = serviceClass.newInstance()
-            serviceHandler.mock = readFieldValue(serviceField, target)
+            HttpServiceHandler serviceHandler = createServiceHandler(serviceField)
+            serviceHandler.mock = getMockFromSpec(serviceField, target)
             return serviceHandler
         }
-    }
-    
-    protected Object readFieldValue(Field field, Object target) {
-        field.accessible = true
-        return field.get(target)
     }
     
     protected List getServiceFields(Class targetClass) {
         targetClass.declaredFields.findAll { Field field ->
             field.isAnnotationPresent(HttpServiceMock)
         }
+    }
+    
+    protected HttpServiceHandler createServiceHandler(Field serviceField) {
+        HttpServiceMock serviceAnnotation = serviceField.getAnnotation(HttpServiceMock)
+        Class serviceClass = serviceAnnotation.value()
+        return serviceClass.newInstance()
+    }
+    
+    protected def getMockFromSpec(Field serviceField, Specification spec) {
+        def mock = spec.getProperty(serviceField.name)
+        if (mock == null) {
+            String specName = spec.getClass().simpleName
+            String exMsg = "Field ${serviceField.name} in ${specName} should be initated to Mock()"
+            throw new RuntimeException(exMsg)    
+        }
+        
+        return mock
     }
     
 }

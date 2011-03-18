@@ -1,4 +1,4 @@
-package spock.extension.httpdmock.httpservice
+package spock.extension.httpdmock.jetty
 
 import java.io.IOException;
 
@@ -14,7 +14,7 @@ import spock.extension.httpdmock.HttpServiceHandler;
  * 
  * @author Kim A. Betti
  */
-class DefaultHttpServiceHandler extends AbstractHandler {
+class JettyHttpServiceHandler extends AbstractHandler {
     
     HttpServiceHandler serviceHandler
     
@@ -22,7 +22,6 @@ class DefaultHttpServiceHandler extends AbstractHandler {
         if (serviceHandler.canHandle(target, request)) {
             response.status = 200 // can be overridden
             serviceHandler.handleRequest(target, request, response)
-            request.handled = true    
         }
     }
 
