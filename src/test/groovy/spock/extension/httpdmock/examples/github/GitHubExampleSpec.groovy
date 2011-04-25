@@ -16,23 +16,26 @@ import spock.lang.Specification
  */
 class GitHubExampleSpec extends Specification {
   
+    // Test server configuration is injected (port / host)
     @HttpServerCfg
-    HttpTestServer server
+    HttpTestServer server 
     
+    // The Spock extension will find this field and wire up 
+    // the end-point as a Jetty handler in the test server.
     @HttpServiceEndpoint(GitHubFollowersRequestToContract)
-    GitHubFollowers githubFollowerService = Mock()
+    FollowerService githubFollowerService = Mock()
 
-    def "Should be able to look up a users folloers"() {
-        given: 
+    def "Should be able to look up a users followers"() {
+        given: "a http client capable of parsing xml responses"
         HTTPBuilder http = new HTTPBuilder(server.baseUri)
         
-        when:
+        when: "we invoke the http service using the http client"
         NodeChild xmlResponse = http.get(path: "/api/v2/xml/user/show/superman/followers")
 
-        then:
+        then: "the http request is translated into a method call on our Spock mock"
         1 * githubFollowerService.followers("superman") >> [ "lex.luthor", "lana.lang" ]
         
-        and:
+        and: "the xml response is as expected"
         xmlResponse.user*.text() == [ "lex.luthor", "lana.lang" ]
     }
     
@@ -45,11 +48,11 @@ class GitHubExampleSpec extends Specification {
  */
 class GitHubFollowersRequestToContract {
 
-    GitHubFollowers contract
+    FollowerService contract
 
     @EndpointRoute("/api/v2/xml/user/show/@username/followers")
-    def findUserFollowers = {
-        List followers = contract.followers(routeParams.username)
+    def findUserFollowers = { 
+        List followers = contract.followers(route.username)
         
         xmlResponse {
             users(type: "array") {
@@ -67,7 +70,7 @@ class GitHubFollowersRequestToContract {
  * of the GitHub followers REST API. 
  * @author Kim A. Betti
  */
-interface GitHubFollowers {
+interface FollowerService {
     
     List<String> followers(String username);
     

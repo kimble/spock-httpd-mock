@@ -45,11 +45,12 @@ class JettyHttpServiceHandler extends AbstractHandler {
                 Closure endpoint = handler.clone()
                 endpoint.delegate = delegate
                 endpoint.resolveStrategy = Closure.DELEGATE_FIRST
+                
                 endpoint.call()
             }
         }
     }
-
+    
 }
 
 class ClosureEndpointDelegate {
@@ -57,13 +58,13 @@ class ClosureEndpointDelegate {
     final HttpServletRequest request
     final HttpServletResponse response
     
-    final Map routeParams
+    final Map route
     final Map params = [:]
     
     public ClosureEndpointDelegate(HttpServletRequest request, HttpServletResponse response, Map routeParams) {
         this.request = request
         this.response = response
-        this.routeParams = routeParams
+        this.route = routeParams
         populateParameterMap(request)
     }
     
