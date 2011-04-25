@@ -8,8 +8,7 @@ import org.spockframework.runtime.extension.IMethodInvocation
 import org.spockframework.runtime.model.FieldInfo
 
 import spock.extension.httpdmock.HttpServerCfg
-import spock.extension.httpdmock.HttpServiceHandler
-import spock.extension.httpdmock.HttpServiceMock
+import spock.extension.httpdmock.HttpServiceEndpoint
 import spock.extension.httpdmock.HttpTestServer
 import spock.extension.httpdmock.jetty.JettyHttpServiceHandler
 import spock.lang.Specification
@@ -56,8 +55,8 @@ public class HttpServerInterceptor implements IMethodInterceptor {
     
     protected void activateServices(HttpTestServer httpTestServer, Object target) {
         List serviceHandlers = getServiceHandlersFromSpec(target)
-        serviceHandlers.each { HttpServiceHandler serviceHandler ->
-            def wrappedHandler = new JettyHttpServiceHandler(serviceHandler: serviceHandler)
+        serviceHandlers.each { serviceHandler ->
+            def wrappedHandler = new JettyHttpServiceHandler(serviceHandler)
             httpTestServer << wrappedHandler
         }
     }
@@ -65,20 +64,20 @@ public class HttpServerInterceptor implements IMethodInterceptor {
     protected List getServiceHandlersFromSpec(Specification target) {
         List serviceFields = getServiceFields(target.getClass())
         return serviceFields.collect { Field serviceField ->
-            HttpServiceHandler serviceHandler = createServiceHandler(serviceField)
-            serviceHandler.mock = getMockFromSpec(serviceField, target)
+            def serviceHandler = createServiceHandler(serviceField)
+            serviceHandler.contract = getMockFromSpec(serviceField, target)
             return serviceHandler
         }
     }
     
     protected List getServiceFields(Class targetClass) {
         targetClass.declaredFields.findAll { Field field ->
-            field.isAnnotationPresent(HttpServiceMock)
+            field.isAnnotationPresent(HttpServiceEndpoint)
         }
     }
     
-    protected HttpServiceHandler createServiceHandler(Field serviceField) {
-        HttpServiceMock serviceAnnotation = serviceField.getAnnotation(HttpServiceMock)
+    protected def createServiceHandler(Field serviceField) {
+        HttpServiceEndpoint serviceAnnotation = serviceField.getAnnotation(HttpServiceEndpoint)
         Class serviceClass = serviceAnnotation.value()
         return serviceClass.newInstance()
     }
@@ -93,5 +92,5 @@ public class HttpServerInterceptor implements IMethodInterceptor {
         
         return mock
     }
-    
+
 }

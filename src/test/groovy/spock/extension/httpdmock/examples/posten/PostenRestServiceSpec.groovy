@@ -1,15 +1,12 @@
-package spock.extension.httpdmock.posten
+package spock.extension.httpdmock.examples.posten
+
 
 import groovy.util.slurpersupport.NodeChild
 import groovyx.net.http.HTTPBuilder
-
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
-
-import spock.extension.httpdmock.HttpTestServer
+import spock.extension.httpdmock.EndpointRoute
 import spock.extension.httpdmock.HttpServerCfg
-import spock.extension.httpdmock.HttpServiceHandler
-import spock.extension.httpdmock.HttpServiceMock
+import spock.extension.httpdmock.HttpServiceEndpoint
+import spock.extension.httpdmock.HttpTestServer
 import spock.extension.httpdmock.response.XmlResponseWriter
 import spock.lang.Specification
 
@@ -23,8 +20,8 @@ class PostenRestServiceSpec extends Specification {
     @HttpServerCfg
     HttpTestServer server
     
-    @HttpServiceMock(PostenRestServiceHandler)
-    ZipCodeResolver postenZipResolver = Mock()
+    @HttpServiceEndpoint(PostenRequestToContract)
+    ZipToPlace postenZipResolver = Mock()
 
     def "Should translate http requests into method invokations on the service interface"() {
         given: "a http client"
@@ -34,7 +31,7 @@ class PostenRestServiceSpec extends Specification {
         NodeChild xmlResponse = http.get(path: "/fraktguide/postalCode.xml", query: [ pnr: "9710" ])
 
         then: "the http request is translated into a method invokation on the interface mock"
-        1 * postenZipResolver.lookup("9710") >> "INDRE BILLEFJORD"
+        1 * postenZipResolver.resolveZipCode("9710") >> "INDRE BILLEFJORD"
         
         and: "the service handler has translated our String into an xml response on the expected format"
         xmlResponse.Response.text() == "INDRE BILLEFJORD"
@@ -59,25 +56,22 @@ class PostenRestServiceSpec extends Specification {
  * @see http://fraktguide.bring.no/fraktguide/postalCode.xml?pnr=7600
  * @author Kim A. Betti
  */
-class PostenRestServiceHandler implements HttpServiceHandler {
+class PostenRequestToContract {
 
-    ZipCodeResolver mock
+    ZipToPlace contract
 
-    boolean canHandle(String target, HttpServletRequest request) {
-        target.startsWith "/fraktguide/postalCode.xml"
-    }
-
-    void handleRequest(String target, HttpServletRequest request, HttpServletResponse response) {
-        String zipCode = request.parameterMap["pnr"][0]
-        String cityName = mock.lookup(zipCode)
-
-        XmlResponseWriter.build(response) {
+    @EndpointRoute("/fraktguide/postalCode.xml")
+    def zipCodeResolver = {
+        String cityName = contract.resolveZipCode(params.pnr)
+        boolean isValid = cityName != null
+        
+        xmlResponse {
             PostalCodeQueryResponse {
-                Response(valid: cityName != null, cityName ?: "Ugyldig postnummer")
+                Response(valid: isValid, cityName ?: "Ugyldig postnummer")
             }
-        } 
-    }
-    
+        }
+    } 
+
 }
 
 /**
@@ -86,8 +80,8 @@ class PostenRestServiceHandler implements HttpServiceHandler {
  * the actual http requests look like. 
  * @author Kim A. Betti
  */
-interface ZipCodeResolver {
+interface ZipToPlace {
     
-    String lookup(String zipCode);
+    String resolveZipCode(String zipCode);
     
 }
