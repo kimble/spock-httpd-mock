@@ -1,6 +1,5 @@
 package spock.extension.httpdmock.examples.github
 
-
 import groovy.util.slurpersupport.NodeChild
 import groovyx.net.http.HTTPBuilder
 import spock.extension.httpdmock.EndpointRoute
@@ -11,11 +10,11 @@ import spock.extension.httpdmock.response.XmlResponseWriter
 import spock.lang.Specification
 
 /**
- * Testing the service handler mechanism by implementing a service mock
- * for a simple rest service provided by the Norwegian postal service. 
+ * Example using parts of the GitHub API
+ * @see http://develop.github.com
  * @author Kim A. Betti
  */
-class GithubSpec extends Specification {
+class GitHubExampleSpec extends Specification {
   
     @HttpServerCfg
     HttpTestServer server
@@ -40,8 +39,8 @@ class GithubSpec extends Specification {
 }
 
 /**
- * Encapsulation of the Norwegian Postal Service REST service for looking up zip codes.
- * @see http://fraktguide.bring.no/fraktguide/postalCode.xml?pnr=7600
+ * Implements a request-to-contract translator for 
+ * parts of the GitHub REST API. 
  * @author Kim A. Betti
  */
 class GitHubFollowersRequestToContract {
@@ -64,9 +63,8 @@ class GitHubFollowersRequestToContract {
 }
 
 /**
- * This interface captures the essence, or contract if you will
- * of the http service end point without bothering with how 
- * the actual http requests look like. 
+ * Declares a input - output contract for parts
+ * of the GitHub followers REST API. 
  * @author Kim A. Betti
  */
 interface GitHubFollowers {
