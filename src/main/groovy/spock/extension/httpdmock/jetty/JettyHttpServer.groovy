@@ -1,6 +1,7 @@
 package spock.extension.httpdmock.jetty
 
 import org.mortbay.jetty.*
+import org.mortbay.jetty.handler.HandlerList
 import org.mortbay.jetty.servlet.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -16,15 +17,15 @@ class JettyHttpServer implements HttpTestServer {
     
     Logger log = LoggerFactory.getLogger(JettyHttpServer);
 
-    List<Handler> jettyHandlers = []
+    HandlerList handlerList = new HandlerList()
     Server server 
     
     Integer port
     
     void addRoute(Route route, Closure handler) {
         log.info("Adding route {} to Jetty", route.pattern)
-        def adapter = new JettyRouteAdapter(route: route, handler: handler)
-        jettyHandlers << adapter
+        def jettyHandler = new JettyRouteAdapter(route: route, handler: handler)
+        handlerList.addHandler(jettyHandler)
     }
     
     public void start() {
@@ -35,9 +36,7 @@ class JettyHttpServer implements HttpTestServer {
     
     protected void createServer(int httpPort) {
         server = new Server(httpPort)
-        jettyHandlers.each { Handler handler ->
-            server.addHandler(handler)   
-        }
+        server.setHandler(handlerList)
     }
 
     public String getBaseUri() {
