@@ -27,6 +27,7 @@ class PostenRestServiceSpec extends Specification {
         
         when: "we execute a simple http get request to the zip code resolver endpoint"
         NodeChild xmlResponse = http.get(path: "/fraktguide/postalCode.xml", query: [ pnr: "9710" ])
+        http.shutdown()
 
         then: "the http request is translated into a method invokation on the interface mock"
         1 * postenZipResolver.resolveZipCode("9710") >> "INDRE BILLEFJORD"
@@ -41,6 +42,7 @@ class PostenRestServiceSpec extends Specification {
         
         when: "we request the city name for an invalid zip code"
         NodeChild xmlResponse = http.get(path: "/fraktguide/postalCode.xml", query: [ pnr: "xxx" ])
+        http.shutdown()
         
         then: "the service handler interpreters the mocks null response as an invalid zip code"
         xmlResponse.Response."@valid" == false

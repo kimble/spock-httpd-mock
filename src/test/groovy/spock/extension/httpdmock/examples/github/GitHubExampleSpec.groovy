@@ -4,8 +4,8 @@ import groovy.util.slurpersupport.NodeChild
 import groovyx.net.http.HTTPBuilder
 import spock.extension.httpdmock.EndpointRoute
 import spock.extension.httpdmock.HttpServerCfg
-import spock.extension.httpdmock.RequestToContract
 import spock.extension.httpdmock.HttpTestServer
+import spock.extension.httpdmock.RequestToContract
 import spock.lang.Specification
 
 /**
@@ -30,6 +30,7 @@ class GitHubExampleSpec extends Specification {
         
         when: "we invoke the http service using the http client"
         NodeChild xmlResponse = http.get(path: "/api/v2/xml/user/show/superman/followers")
+        http.shutdown()
 
         then: "the http request is translated into a method call on our Spock mock"
         1 * githubFollowerService.followers("superman") >> [ "lex.luthor", "lana.lang" ]
