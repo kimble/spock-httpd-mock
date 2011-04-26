@@ -1,15 +1,12 @@
 package spock.extension.httpdmock.jetty
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-
 import org.mortbay.jetty.*
-import org.mortbay.jetty.handler.AbstractHandler;
 import org.mortbay.jetty.servlet.*
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-import spock.extension.httpdmock.HttpTestServer;
+import spock.extension.httpdmock.HttpTestServer
+import spock.extension.httpdmock.route.Route
 
 /**
  * Jetty rocks! 
@@ -17,13 +14,17 @@ import spock.extension.httpdmock.HttpTestServer;
  */
 class JettyHttpServer implements HttpTestServer {
     
-    List requestHandlers = []
+    Logger log = LoggerFactory.getLogger(JettyHttpServer);
+
+    List<Handler> jettyHandlers = []
     Server server 
     
     Integer port
     
-    public void leftShift(Handler handler) {
-        requestHandlers << handler
+    void addRoute(Route route, Closure handler) {
+        log.info("Adding route {} to Jetty", route.pattern)
+        def adapter = new JettyRouteAdapter(route: route, handler: handler)
+        jettyHandlers << adapter
     }
     
     public void start() {
@@ -34,7 +35,7 @@ class JettyHttpServer implements HttpTestServer {
     
     protected void createServer(int httpPort) {
         server = new Server(httpPort)
-        requestHandlers.each { Handler handler ->
+        jettyHandlers.each { Handler handler ->
             server.addHandler(handler)   
         }
     }

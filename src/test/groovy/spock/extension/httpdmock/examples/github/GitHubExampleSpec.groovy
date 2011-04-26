@@ -4,9 +4,8 @@ import groovy.util.slurpersupport.NodeChild
 import groovyx.net.http.HTTPBuilder
 import spock.extension.httpdmock.EndpointRoute
 import spock.extension.httpdmock.HttpServerCfg
-import spock.extension.httpdmock.HttpServiceEndpoint
+import spock.extension.httpdmock.RequestToContract
 import spock.extension.httpdmock.HttpTestServer
-import spock.extension.httpdmock.response.XmlResponseWriter
 import spock.lang.Specification
 
 /**
@@ -22,7 +21,7 @@ class GitHubExampleSpec extends Specification {
     
     // The Spock extension will find this field and wire up 
     // the end-point as a Jetty handler in the test server.
-    @HttpServiceEndpoint(GitHubFollowersRequestToContract)
+    @RequestToContract(GitHubFollowersRequestToContract)
     FollowerService githubFollowerService = Mock()
 
     def "Should be able to look up a users followers"() {

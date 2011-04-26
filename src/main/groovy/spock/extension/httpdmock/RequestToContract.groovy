@@ -8,6 +8,6 @@ import java.lang.annotation.*
  */
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface HttpServiceEndpoint {
+public @interface RequestToContract {
     Class value()    
 }

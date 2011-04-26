@@ -1,4 +1,4 @@
-package spock.extension.httpdmock.request
+package spock.extension.httpdmock.route
 
 import spock.lang.Specification;
 import spock.lang.Unroll;

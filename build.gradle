@@ -9,11 +9,13 @@ repositories {
 }
 
 dependencies {
-    groovy group: 'org.codehaus.groovy', name: 'groovy', version: '1.7.9'
+    groovy group: 'org.codehaus.groovy', name: 'groovy', version: '1.7.10'
     
     compile "org.mortbay.jetty:jetty-embedded:6.1.26"
-    compile "junit:junit:4.8.1"
     compile "org.spockframework:spock-core:0.5-groovy-1.7"
+    
+    compile "de.huxhorn.lilith:logback:0.9.40", "ch.qos.logback:logback-classic:0.9.28"
+    compile "org.slf4j:slf4j-api:1.6.1"
     
     testCompile "org.codehaus.groovy.modules.http-builder:http-builder:0.5.1", {
         exclude module: "groovy"

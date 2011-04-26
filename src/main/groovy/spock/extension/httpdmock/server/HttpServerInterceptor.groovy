@@ -3,14 +3,17 @@ package spock.extension.httpdmock.server;
 import java.lang.reflect.Field
 
 import org.codehaus.groovy.runtime.InvokerHelper
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.spockframework.runtime.extension.IMethodInterceptor
 import org.spockframework.runtime.extension.IMethodInvocation
 import org.spockframework.runtime.model.FieldInfo
 
+import spock.extension.httpdmock.EndpointRoute
 import spock.extension.httpdmock.HttpServerCfg
-import spock.extension.httpdmock.HttpServiceEndpoint
+import spock.extension.httpdmock.RequestToContract
 import spock.extension.httpdmock.HttpTestServer
-import spock.extension.httpdmock.jetty.JettyHttpServiceHandler
+import spock.extension.httpdmock.route.Route
 import spock.lang.Specification
 
 /**
@@ -21,6 +24,8 @@ import spock.lang.Specification
  * @author Kim A. Betti
  */
 public class HttpServerInterceptor implements IMethodInterceptor {
+    
+    Logger log = LoggerFactory.getLogger(HttpServerInterceptor)
 
     private HttpServerCfg serverAnnotation;
     private FieldInfo serverField;
@@ -36,9 +41,11 @@ public class HttpServerInterceptor implements IMethodInterceptor {
         activateServices(httpTestServer, invocation.target)
         
         try {
+            log.debug("Starting http test server")
             httpTestServer.start()
             invocation.proceed()
         } finally {
+            log.debug("Stopping http test server")
             httpTestServer?.stop()
         }
     }
@@ -54,32 +61,31 @@ public class HttpServerInterceptor implements IMethodInterceptor {
     }
     
     protected void activateServices(HttpTestServer httpTestServer, Object target) {
-        List serviceHandlers = getServiceHandlersFromSpec(target)
-        serviceHandlers.each { serviceHandler ->
-            def wrappedHandler = new JettyHttpServiceHandler(serviceHandler)
-            httpTestServer << wrappedHandler
+        List requestToContractInstances = getRequestToContractInstancesFromSpec(target)
+        requestToContractInstances.each { requestToContractInstance ->
+            addRequestAdaptersToServer(httpTestServer, requestToContractInstance)
         }
     }
     
-    protected List getServiceHandlersFromSpec(Specification target) {
+    protected List getRequestToContractInstancesFromSpec(Specification target) {
         List serviceFields = getServiceFields(target.getClass())
         return serviceFields.collect { Field serviceField ->
-            def serviceHandler = createServiceHandler(serviceField)
-            serviceHandler.contract = getMockFromSpec(serviceField, target)
-            return serviceHandler
+            def requestToContractInstance = instantiateRequestToContractFromField(serviceField)
+            requestToContractInstance.contract = getMockFromSpec(serviceField, target)
+            return requestToContractInstance
         }
     }
     
     protected List getServiceFields(Class targetClass) {
         targetClass.declaredFields.findAll { Field field ->
-            field.isAnnotationPresent(HttpServiceEndpoint)
+            field.isAnnotationPresent(RequestToContract)
         }
     }
-    
-    protected def createServiceHandler(Field serviceField) {
-        HttpServiceEndpoint serviceAnnotation = serviceField.getAnnotation(HttpServiceEndpoint)
-        Class serviceClass = serviceAnnotation.value()
-        return serviceClass.newInstance()
+
+    protected def instantiateRequestToContractFromField(Field requestToContractField) {
+        RequestToContract serviceAnnotation = requestToContractField.getAnnotation(RequestToContract)
+        Class requestToContractClass = serviceAnnotation.value()
+        return requestToContractClass.newInstance()
     }
     
     protected def getMockFromSpec(Field serviceField, Specification spec) {
@@ -91,6 +97,18 @@ public class HttpServerInterceptor implements IMethodInterceptor {
         }
         
         return mock
+    }
+    
+    protected void addRequestAdaptersToServer(HttpTestServer httpTestServer, def requestToContractInstance) {
+        requestToContractInstance.class.declaredFields.each { Field field ->
+            if (field.isAnnotationPresent(EndpointRoute)) {
+                field.accessible = true
+                EndpointRoute endpointRoute = field.getAnnotation(EndpointRoute)
+                Route route = new Route(endpointRoute.value())
+                Closure handler = field.get(requestToContractInstance)
+                httpTestServer.addRoute(route, handler)
+            }
+        }
     }
 
 }

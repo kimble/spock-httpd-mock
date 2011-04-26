@@ -1,13 +1,11 @@
 package spock.extension.httpdmock.examples.posten
 
-
 import groovy.util.slurpersupport.NodeChild
 import groovyx.net.http.HTTPBuilder
 import spock.extension.httpdmock.EndpointRoute
 import spock.extension.httpdmock.HttpServerCfg
-import spock.extension.httpdmock.HttpServiceEndpoint
+import spock.extension.httpdmock.RequestToContract
 import spock.extension.httpdmock.HttpTestServer
-import spock.extension.httpdmock.response.XmlResponseWriter
 import spock.lang.Specification
 
 /**
@@ -20,7 +18,7 @@ class PostenRestServiceSpec extends Specification {
     @HttpServerCfg
     HttpTestServer server
     
-    @HttpServiceEndpoint(PostenRequestToContract)
+    @RequestToContract(PostenRequestToContract)
     ZipToPlace postenZipResolver = Mock()
 
     def "Should translate http requests into method invokations on the service interface"() {

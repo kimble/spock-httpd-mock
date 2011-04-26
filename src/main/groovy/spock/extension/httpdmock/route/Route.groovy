@@ -1,4 +1,4 @@
-package spock.extension.httpdmock.request
+package spock.extension.httpdmock.route
 
 import java.util.regex.Matcher
 import java.util.regex.Pattern;

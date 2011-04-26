@@ -1,7 +1,6 @@
 package spock.extension.httpdmock;
 
-import spock.extension.httpdmock.request.WrappedRequest
-import spock.extension.httpdmock.response.HttpResponseStub
+import spock.extension.httpdmock.route.Route
 
 /**
  * 
@@ -14,5 +13,7 @@ public interface HttpTestServer {
     
     void start()
     void stop()
+    
+    void addRoute(Route route, Closure handler)
     
 }
