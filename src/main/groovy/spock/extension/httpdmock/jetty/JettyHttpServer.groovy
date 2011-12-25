@@ -1,13 +1,12 @@
 package spock.extension.httpdmock.jetty
 
-import org.mortbay.jetty.*
-import org.mortbay.jetty.handler.HandlerList
-import org.mortbay.jetty.servlet.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 import spock.extension.httpdmock.HttpTestServer
 import spock.extension.httpdmock.route.Route
+import org.eclipse.jetty.server.handler.HandlerList
+import org.eclipse.jetty.server.Server
 
 /**
  * Jetty rocks! 
@@ -18,7 +17,7 @@ class JettyHttpServer implements HttpTestServer {
     Logger log = LoggerFactory.getLogger(JettyHttpServer);
 
     HandlerList handlerList = new HandlerList()
-    Server server 
+    Server server
     
     Integer port
     

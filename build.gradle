@@ -13,7 +13,7 @@ repositories {
 dependencies {
     groovy group: 'org.codehaus.groovy', name: 'groovy', version: '1.8.4'
     
-    compile "org.mortbay.jetty:jetty-embedded:6.1.26"
+    compile "org.eclipse.jetty:jetty-server:8.0.4.v20111024"
 
     compile "org.spockframework:spock-core:0.6-groovy-1.8-SNAPSHOT", {
         exclude module: "groovy-all"
