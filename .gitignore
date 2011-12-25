@@ -1,6 +1,9 @@
 build
 bin
+out
+.idea
 .classpath
 .gradle
 .project
 *.setting*
+*.iml
