@@ -5,8 +5,8 @@ import spock.lang.Unroll
 
 class ClosureEndpointDelegateSpec extends Specification {
 
-    @Unroll("Java property #propertyName formatted as http header should be #httpConvention")
-    def "Should be able to convert headers formatted as Java propertis to http convention"() {
+    @Unroll
+    def "Java property #propertyName formatted as http header should be #httpConvention"() {
         given:
         ClosureEndpointDelegate endpointDelegate = new ClosureEndpointDelegate()
         

@@ -9,8 +9,8 @@ import spock.lang.Unroll;
  */
 class RouteSpec extends Specification {
 
-    @Unroll("#pattern should match #path? #shouldMatch")
-    def "Route pattern matching"() {
+    @Unroll
+    def "#pattern should match #path? #shouldMatch"() {
         expect:
         Route rp = new Route(pattern)
         rp.matches(url) == shouldMatch
@@ -22,8 +22,8 @@ class RouteSpec extends Specification {
         "/api/user/@username"   | "/api/user"             | false      
     }
     
-    @Unroll("Should be able to extract parameter values #params from #path using #routePattern")
-    def "Extract param values"() {
+    @Unroll
+    def "Should be able to extract parameter values #params from #path using #routePattern"() {
         expect:
         Route rp = new Route(routePattern)
         rp.params(url) == params
@@ -35,8 +35,8 @@ class RouteSpec extends Specification {
         "/api/user/@username"       | "/api/user"       | [ : ]
     }
     
-    @Unroll("Should extract parameter names #paramNames from #routePattern")
-    def "Should be able to extract parameter names"() {
+    @Unroll
+    def "Should extract parameter names #paramNames from #routePattern"() {
         expect:
         Route route = new Route(routePattern)
         route.paramNames == paramNames
