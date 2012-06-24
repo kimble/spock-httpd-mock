@@ -5,9 +5,6 @@ sourceCompatibility = 1.6
 
 repositories {
     mavenCentral()
-    maven {
-        url "http://m2repo.spockframework.org/snapshots"
-    }
 }
 
 dependencies {
@@ -15,7 +12,7 @@ dependencies {
     
     compile "org.eclipse.jetty:jetty-server:8.0.4.v20111024"
 
-    compile "org.spockframework:spock-core:0.6-groovy-1.8-SNAPSHOT", {
+    compile "org.spockframework:spock-core:0.6-groovy-1.8", {
         exclude module: "groovy-all"
     }
     
