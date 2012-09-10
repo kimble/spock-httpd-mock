@@ -1,24 +1,23 @@
-apply plugin: 'eclipse'
 apply plugin: 'groovy'
 
-sourceCompatibility = 1.6
+sourceCompatibility = 1.7
 
 repositories {
+    maven { url 'http://oss.sonatype.org/content/repositories/snapshots/' }
     mavenCentral()
 }
 
 dependencies {
-    groovy group: 'org.codehaus.groovy', name: 'groovy', version: '1.8.4'
+    groovy group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.0.1'
     
-    compile "org.eclipse.jetty:jetty-server:8.0.4.v20111024"
+    compile "org.eclipse.jetty:jetty-server:8.1.5.v20120716"
+    compile "org.spockframework:spock-core:0.7-groovy-2.0-SNAPSHOT"    
+    compile "org.slf4j:jcl-over-slf4j:1.6.6"
 
-    compile "org.spockframework:spock-core:0.6-groovy-1.8", {
-        exclude module: "groovy-all"
-    }
-    
-    compile "de.huxhorn.lilith:logback:0.9.40", "ch.qos.logback:logback-classic:1.0.0"
-    
-    testCompile "org.codehaus.groovy.modules.http-builder:http-builder:0.5.1", {
+    testCompile "ch.qos.logback:logback-classic:1.0.6"
+	
+    testCompile "org.codehaus.groovy.modules.http-builder:http-builder:0.5.2", {
         exclude module: "groovy"
+        exclude module: "commons-logging"
     }
 }
