@@ -1,4 +1,5 @@
 apply plugin: 'groovy'
+apply plugin: 'idea'
 
 sourceCompatibility = 1.7
 
@@ -7,9 +8,9 @@ repositories {
 }
 
 dependencies {
-    groovy 'org.codehaus.groovy:groovy-all:2.1.1'
+    groovy 'org.codehaus.groovy:groovy:2.1.1'
     
-    compile 'org.eclipse.jetty:jetty-server:8.1.10.v20130312',
+    compile 'org.eclipse.jetty:jetty-server:9.0.0.v20130308',
             'org.spockframework:spock-core:0.7-groovy-2.0',
             'org.slf4j:jcl-over-slf4j:1.7.4'
 

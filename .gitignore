@@ -7,3 +7,5 @@ out
 .project
 *.setting*
 *.iml
+*.ipr
+*.iws
